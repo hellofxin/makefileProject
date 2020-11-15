@@ -1,0 +1,9 @@
+*
+!*/
+!.gitignore
+
+![mM]akefile
+!*.c
+!*.h
+!main/**
+!user/**
