@@ -1,55 +1,53 @@
-DIR_INC := -I./main -I./user
-DIR_SRC := ./main
-DIR_SRC_USER := ./user
-DIR_OBJ := ./obj
-DIR_BIN := ./bin
+dirInclude := ./main ./user
+flagInclude := $(foreach dir, $(dirInclude), -I$(dir))
+dirSource := ./main ./user
+dirObject := ./object
 
-SRC := $(wildcard ${DIR_SRC}/*.c)  
-SRC += $(wildcard $(DIR_SRC_USER)/*.c)
-OBJ := $(patsubst %.c,${DIR_OBJ}/%.o,$(notdir ${SRC})) 
-DEP := $(OBJ:.o=.d)
- 
-TARGET = main
+source := $(foreach dir, $(dirSource), $(wildcard $(dir)/*.c))
+object := $(patsubst %.c, $(dirObject)/%.o, $(notdir $(source)))
+dependence := $(object:.o=.d)
 
-BIN_TARGET = ${DIR_BIN}/${TARGET}
+CC := g++
+CFLAGS := -g -Wall $(flagInclude)
+target = all
+$(target):$(object) 
+	$(CC) -o $@ $(CFLAGS) $^
 
-CC = g++
-CFLAGS = -g -Wall ${DIR_INC}
+#$(dirObject)/%.o:$(foreach dir, $(dirSource), $(dir)/%.c)
+#	$(CC) $(CFLAGS) -c $< -o $@
 
-${BIN_TARGET}:${OBJ}
-	$(CC) $(OBJ)  -o $@
- 
-${DIR_OBJ}/%.o:${DIR_SRC}/%.c
-	$(CC) $(CFLAGS) -c  $< -o $@
+$(dirObject)/%.o:./main/%.c
+	$(CC) -o $@ $(CFLAGS) -c $< 
 
+$(dirObject)/%.o:./user/%.c
+	$(CC) -o $@ $(CFLAGS) -c $< 
 
-${DIR_OBJ}/%.o:$(DIR_SRC_USER)/%.c
-	$(CC) $(CFLAGS) -c  $< -o $@
+-include $(dependence)
 
-
-${DIR_OBJ}/%.d:$(DIR_SRC)/%.c
-	@set -e; rm -f $@; \
-	rm -f $@.*; \
-	$(CC) -MM $(CFLAGS) $< > $@.$$$$; \
-	sed 's,\($*\).o[ :]*,$(dir $@)\1.o $@ : ,g' < $@.$$$$ > $@; \
-	rm -f $@.$$$$
-
-${DIR_OBJ}/%.d:$(DIR_SRC_USER)/%.c
-	@set -e; rm -f $@; \
-	$(CC) -MM $(CPPFLAGS) $< > $@.$$$$; \
-	sed 's,\($*\).o[ :]*,$(dir $@)\1.o $@ : ,g' < $@.$$$$ > $@; \
-	rm -f $@.$$$$	
-
--include $(DEP)
+$(dirObject)/%.d:./main/%.c
+	$(createDependence)
+	
+$(dirObject)/%.d:./user/%.c
+	$(createDependence)
 
 .PHONY:clean
+
 clean:
-	rm -f $(OBJ) $(DEP) $(BIN_TARGET)
+	-rm -f $(target) $(object) $(dependence)
+
+define createDependence
+@set -e; rm -f $@; \
+$(CC) -MM $(CFLAGS) $< > $@.$$$$; \
+sed 's,\($*\).o[ :]*,$(dir $@)\1.o $@ : ,g' < $@.$$$$ > $@; \
+rm -f $@.$$$$
+endef
 
 test:
-	@echo dir_inc = $(DIR_INC)
-	@echo dir src = $(DIR_SRC)
-	@echo dir_obj = $(DIR_OBJ)
-	@echo src = $(SRC)
-	@echo obj = $(OBJ)
-	@echo dep = $(DEP)
+	@echo dirInclude = $(dirInclude)
+	@echo flagInclude = $(flagInclude)
+	@echo dirSource = $(dirSource)
+	@echo dirObject = $(dirObject)
+	@echo source = $(source)
+	@echo object = $(object)
+	@echo dependence = $(dependence)
+
