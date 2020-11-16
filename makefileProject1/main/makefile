@@ -1,27 +1,19 @@
-dirInclude ?= ./main ./user
-flagInclude := $(foreach dir, $(dirInclude), -I$(dir))
-dirSource ?= ./main ./user
-dirObject ?= ./object
+#dirInclude += ./main 
+#flagInclude := $(foreach dir, $(dirInclude), -I$(dir))
+#dirSource += ./main 
+#dirObject ?= ./object
 
-source := $(foreach dir, $(dirSource), $(wildcard $(dir)/*.c))
-object := $(patsubst %.c, $(dirObject)/%.o, $(notdir $(source)))
-dependence := $(object:.o=.d)
+#source := $(foreach dir, $(dirSource), $(wildcard $(dir)/*.c))
+#object := $(patsubst %.c, $(dirObject)/%.o, $(notdir $(source)))
+#dependence := $(object:.o=.d)
 
-CC ?= g++
-CFLAGS ?= -g -Wall $(flagInclude)
+#-include $(dependence)
+
+#CC ?= g++
+#CFLAGS := -g -Wall $(flagInclude)
 
 $(dirObject)/%.o:./main/%.c
 	$(CC) -o $@ $(CFLAGS) -c $< 
 
--include $(dependence)
-
 $(dirObject)/%.d:./main/%.c
 	$(createDependence)
-	
-define createDependence
-@set -e; rm -f $@; \
-$(CC) -MM $(CFLAGS) $< > $@.$$$$; \
-sed 's,\($*\).o[ :]*,$(dir $@)\1.o $@ : ,g' < $@.$$$$ > $@; \
-rm -f $@.$$$$
-endef
-

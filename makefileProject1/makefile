@@ -1,11 +1,12 @@
 dirInclude := ./main ./user
-flagInclude := $(foreach dir, $(dirInclude), -I$(dir))
 dirSource := ./main ./user
 dirObject := ./object
 
 source := $(foreach dir, $(dirSource), $(wildcard $(dir)/*.c))
 object := $(patsubst %.c, $(dirObject)/%.o, $(notdir $(source)))
 dependence := $(object:.o=.d)
+
+flagInclude := $(foreach dir, $(dirInclude), -I$(dir))
 
 CC := g++
 CFLAGS := -g -Wall $(flagInclude)
@@ -29,7 +30,14 @@ sed 's,\($*\).o[ :]*,$(dir $@)\1.o $@ : ,g' < $@.$$$$ > $@; \
 rm -f $@.$$$$
 endef
 
-export $(dirInclude) $(flagInclude) $(dirSource) $(dirObject) $(source) $(object) $(dependence) $(createDependence)
+export $(dirInclude)
+export $(flagInclude) 
+export $(dirSource) 
+export $(dirObject) 
+export $(source) 
+export $(object) 
+export $(dependence) 
+export $(createDependence)
 
 test:
 	@echo dirInclude = $(dirInclude)
