@@ -10,30 +10,17 @@ dependence := $(object:.o=.d)
 CC := g++
 CFLAGS := -g -Wall $(flagInclude)
 target = all
+
 $(target):$(object) 
 	$(CC) -o $@ $(CFLAGS) $^
 
-#$(dirObject)/%.o:$(foreach dir, $(dirSource), $(dir)/%.c)
-#	$(CC) $(CFLAGS) -c $< -o $@
-
-$(dirObject)/%.o:./main/%.c
-	$(CC) -o $@ $(CFLAGS) -c $< 
-
-$(dirObject)/%.o:./user/%.c
-	$(CC) -o $@ $(CFLAGS) -c $< 
-
--include $(dependence)
-
-$(dirObject)/%.d:./main/%.c
-	$(createDependence)
-	
-$(dirObject)/%.d:./user/%.c
-	$(createDependence)
-
 .PHONY:clean
-
 clean:
 	-rm -f $(target) $(object) $(dependence)
+
+-include ./main/makefile
+-include ./user/makefile
+-include $(dependence)
 
 define createDependence
 @set -e; rm -f $@; \
@@ -41,6 +28,8 @@ $(CC) -MM $(CFLAGS) $< > $@.$$$$; \
 sed 's,\($*\).o[ :]*,$(dir $@)\1.o $@ : ,g' < $@.$$$$ > $@; \
 rm -f $@.$$$$
 endef
+
+export $(dirInclude) $(flagInclude) $(dirSource) $(dirObject) $(source) $(object) $(dependence) $(createDependence)
 
 test:
 	@echo dirInclude = $(dirInclude)
